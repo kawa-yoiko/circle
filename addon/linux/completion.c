@@ -1,8 +1,7 @@
 #include <linux/completion.h>
 #include <linux/jiffies.h>
 #include <linux/bug.h>
-#include <circle/sched/scheduler.h>
-#include <circle/multicore.h>
+#include <linux/env.h>
 
 void complete (struct completion *x)
 {
@@ -30,7 +29,7 @@ void wait_for_completion (struct completion *x)
 
 	while (x->done == 0)
 	{
-		CScheduler::Get ()->Yield ();
+		SchedulerYield();
 	}
 
 	x->done--;
@@ -68,7 +67,7 @@ long wait_for_completion_interruptible_timeout (struct completion *x, unsigned l
 			return 0;
 		}
 
-		CScheduler::Get ()->Yield ();
+		SchedulerYield();
 	}
 
 	x->done--;

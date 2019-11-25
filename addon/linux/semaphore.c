@@ -1,7 +1,6 @@
 #include <linux/semaphore.h>
 #include <linux/bug.h>
-#include <circle/sched/scheduler.h>
-#include <circle/multicore.h>
+#include <linux/env.h>
 
 void down (struct semaphore *sem)
 {
@@ -11,7 +10,7 @@ void down (struct semaphore *sem)
 
 	while (sem->count == 0)
 	{
-		CScheduler::Get ()->Yield ();
+		SchedulerYield();
 	}
 
 	sem->count--;

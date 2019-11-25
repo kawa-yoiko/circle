@@ -1,5 +1,5 @@
 #include <linux/device.h>
-#include <circle/logger.h>
+#include <stdarg.h>
 
 static const char FromDevice[] = "device";
 
@@ -19,7 +19,8 @@ void dev_err (const struct device *dev, const char *fmt, ...)
 	va_list var;
 	va_start (var, fmt);
 
-	CLogger::Get ()->WriteV (FromDevice, LogError, fmt, var);
+	// TODO: Use LogWrite()
+	//CLogger::Get ()->WriteV (FromDevice, LogError, fmt, var);
 
 	va_end (var);
 }
@@ -29,7 +30,7 @@ void dev_warn (const struct device *dev, const char *fmt, ...)
 	va_list var;
 	va_start (var, fmt);
 
-	CLogger::Get ()->WriteV (FromDevice, LogWarning, fmt, var);
+	//CLogger::Get ()->WriteV (FromDevice, LogWarning, fmt, var);
 
 	va_end (var);
 }
