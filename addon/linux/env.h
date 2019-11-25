@@ -7,7 +7,8 @@ extern "C" {
 
 #include <stdint.h>
 
-int SchedulerCreateThread (void (*fn) (void *), void *param);
+void SchedulerInitialize ();
+int SchedulerCreateThread (int (*fn) (void *), void *param);
 void SchedulerRegisterSwitchHandler (void (*fn) (int));
 void SchedulerYield ();
 

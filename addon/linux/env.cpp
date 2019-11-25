@@ -8,12 +8,55 @@
 #include <circle/logger.h>
 #include <circle/stdarg.h>
 
-int SchedulerCreateThread (void (*fn) (void *), void *param)
+class CKThread : public CTask
 {
+public:
+	CKThread (int (*threadfn) (void *data), void *data)
+	:	m_threadfn (threadfn),
+		m_data (data)
+	{
+	}
+
+	void Run (void)
+	{
+		(*m_threadfn) (m_data);
+	}
+
+private:
+	int (*m_threadfn) (void *data);
+	void *m_data;
+};
+
+static int next_pid = 1;
+
+void SchedulerInitialize ()
+{
+	CTask *ctask = CScheduler::Get ()->GetCurrentTask ();
+	ctask->SetUserData (0);
+}
+
+int SchedulerCreateThread (int (*fn) (void *), void *param)
+{
+	int pid = next_pid++;
+
+	CTask *ctask = new CKThread (fn, param);
+	ctask->SetUserData ((void *) pid);
+
+	return pid;
+}
+
+void (*switch_handler) (int) = 0;
+
+static void switch_handler_wrapper (CTask *task)
+{
+	if (switch_handler != 0)
+		switch_handler((int) task->GetUserData ());
 }
 
 void SchedulerRegisterSwitchHandler (void (*fn) (int))
 {
+	switch_handler = fn;
+	CScheduler::Get ()->RegisterTaskSwitchHandler (switch_handler_wrapper);
 }
 
 void SchedulerYield ()
