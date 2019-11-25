@@ -121,7 +121,7 @@ boolean CScreenDevice::Initialize (void)
 	ClearDisplayEnd ();
 	InvertCursor ();
 
-	CDeviceNameService::Get ()->AddDevice ("tty1", this, FALSE);
+	//CDeviceNameService::Get ()->AddDevice ("tty1", this, FALSE);
 
 	return TRUE;
 }

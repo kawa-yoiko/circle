@@ -191,7 +191,7 @@ boolean CSerialDevice::Initialize (unsigned nBaudrate)
 
 	PeripheralExit ();
 
-	CDeviceNameService::Get ()->AddDevice ("ttyS1", this, FALSE);
+	//CDeviceNameService::Get ()->AddDevice ("ttyS1", this, FALSE);
 
 	return TRUE;
 }
@@ -573,7 +573,7 @@ void CSerialDevice::InterruptStub (void *pParam)
 
 boolean CSerialDevice::Initialize (unsigned nBaudrate)
 {
-	CDeviceNameService::Get ()->AddDevice ("ttyS1", this, FALSE);
+	//CDeviceNameService::Get ()->AddDevice ("ttyS1", this, FALSE);
 
 	return TRUE;
 }
