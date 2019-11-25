@@ -34,20 +34,20 @@
 #include <vc4/sound/vchiqsounddevice.h>
 #include <circle/types.h>
 
-CMemorySystem		m_Memory;
-CActLED			m_ActLED;
-CKernelOptions		m_Options;
-CDeviceNameService	m_DeviceNameService;
-CScreenDevice		m_Screen (m_Options.GetWidth (), m_Options.GetHeight ());
-CSerialDevice		m_Serial;
-CExceptionHandler	m_ExceptionHandler;
-CInterruptSystem	m_Interrupt;
-CTimer			m_Timer (&m_Interrupt);
-CLogger			m_Logger (m_Options.GetLogLevel (), &m_Timer);
-CScheduler		m_Scheduler;
+CMemorySystem       m_Memory;
+CActLED             m_ActLED;
+CKernelOptions      m_Options;
+CDeviceNameService  m_DeviceNameService;
+CScreenDevice       m_Screen (m_Options.GetWidth (), m_Options.GetHeight ());
+CSerialDevice       m_Serial;
+CExceptionHandler   m_ExceptionHandler;
+CInterruptSystem    m_Interrupt;
+CTimer              m_Timer (&m_Interrupt);
+CLogger             m_Logger (m_Options.GetLogLevel (), &m_Timer);
+CScheduler          m_Scheduler;
 
-CVCHIQDevice		m_VCHIQ (&m_Memory, &m_Interrupt);
-CVCHIQSoundDevice	m_VCHIQSound (&m_VCHIQ, (TVCHIQSoundDestination) m_Options.GetSoundOption ());
+CVCHIQDevice        m_VCHIQ (&m_Memory, &m_Interrupt);
+CVCHIQSoundDevice   m_VCHIQSound (&m_VCHIQ, (TVCHIQSoundDestination) m_Options.GetSoundOption ());
 
 static void Initialize ();
 static void Run ();
