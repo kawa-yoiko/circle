@@ -32,6 +32,8 @@ void LogWrite (const char *pSource,         // short name of module
                unsigned    Severity,        // see above
                const char *pMessage, ...);  // uses printf format options
 
+void *GetCoherentRegion512K ();
+
 #ifdef __cplusplus
 }
 #endif

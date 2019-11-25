@@ -114,5 +114,21 @@ void LogWrite (const char *pSource,
 
 	CLogger::Get ()->WriteV (pSource, (TLogSeverity) Severity, pMessage, var);
 
-	va_end (var);
+va_end (var);
+}
+
+#define COHERENT_SLOT_VCHIQ_START       (MEGABYTE / PAGE_SIZE / 2)
+#define COHERENT_SLOT_VCHIQ_END         (MEGABYTE / PAGE_SIZE - 1)
+
+// TODO: Make this work with 64-bit
+u32 CMemorySystem_GetCoherentPage (unsigned nSlot)
+{
+	u32 nPageAddress = MEM_COHERENT_REGION;
+	nPageAddress += nSlot * PAGE_SIZE;
+	return nPageAddress;
+}
+
+void *GetCoherentRegion512K ()
+{
+	return (void *) CMemorySystem_GetCoherentPage (COHERENT_SLOT_VCHIQ_START);
 }
