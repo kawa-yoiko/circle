@@ -31,8 +31,14 @@
 #include <circle/logger.h>
 #include <circle/sched/scheduler.h>
 #include <vc4/vchiq/vchiqdevice.h>
-#include <vc4/sound/vchiqsounddevice.h>
+#include <vc4/sound/vchiqsoundbasedevice.h>
 #include <circle/types.h>
+
+#include <math.h>
+
+#ifndef M_PI
+#define M_PI 3.1415926535897932384626433832795
+#endif
 
 CMemorySystem       m_Memory;
 //CActLED             m_ActLED;
@@ -46,8 +52,8 @@ CTimer              m_Timer (&m_Interrupt);
 CLogger             m_Logger (LogDebug, 0);
 CScheduler          m_Scheduler;
 
-CVCHIQDevice        m_VCHIQ (&m_Memory, &m_Interrupt);
-CVCHIQSoundDevice   m_VCHIQSound (&m_VCHIQ, VCHIQSoundDestinationAuto);
+CVCHIQDevice		    m_VCHIQ;
+CVCHIQSoundBaseDevice   m_VCHIQSound;
 
 static void Initialize ();
 static void Run ();
@@ -65,6 +71,20 @@ int main (void)
 #define SOUND_SAMPLES		(sizeof Sound / sizeof Sound[0] / SOUND_CHANNELS)
 
 static const char FromKernel[] = "kernel";
+
+unsigned synth(int16_t *buf, unsigned chunk_size)
+{
+	//uint32_t seed = 20191118;
+	static uint8_t phase = 0;
+	for (unsigned i = 0; i < chunk_size; i += 2) {
+		//seed = ((seed * 1103515245) + 12345) & 0x7fffffff;
+		//buf[i] = (int16_t)(seed & 0xffff);
+		int16_t sample = (int16_t)(32767 * sin(phase / 255.0 * M_PI * 2));
+		buf[i] = buf[i + 1] = sample;
+		phase += 2; // Folds over to 0 ~ 255, generates 344.5 Hz (F4 - ~1/4 semitone)
+	}
+	return chunk_size;
+}
 
 void Initialize (void)
 {
@@ -92,7 +112,8 @@ void Initialize (void)
 
 	if (bOK)
 	{
-		bOK = m_VCHIQ.Initialize ();
+		bOK = CVCHIQDevice_Initialize(&m_VCHIQ);
+		CVCHIQSoundBaseDevice_Ctor(&m_VCHIQSound, &m_VCHIQ, 44100, 4000, VCHIQSoundDestinationAuto);
 	}
 }
 
@@ -100,16 +121,15 @@ void Run (void)
 {
 	m_Logger.Write (FromKernel, LogNotice, "Compile time: " __DATE__ " " __TIME__);
 
+	m_VCHIQSound.chunk_cb = synth;
+
 	while (1)
 	{
-		if (!m_VCHIQSound.Playback (Sound, SOUND_SAMPLES, SOUND_CHANNELS, SOUND_BITS))
-		{
-			m_Logger.Write (FromKernel, LogPanic, "Cannot start playback");
-		}
+		CVCHIQSoundBaseDevice_Start(&m_VCHIQSound);
 
 		m_Logger.Write (FromKernel, LogNotice, "Playback started");
 
-		for (unsigned nCount = 0; m_VCHIQSound.PlaybackActive (); nCount++)
+		for (unsigned nCount = 0; CVCHIQSoundBaseDevice_IsActive (&m_VCHIQSound); nCount++)
 		{
 			m_Screen.Rotor (0, nCount);
 

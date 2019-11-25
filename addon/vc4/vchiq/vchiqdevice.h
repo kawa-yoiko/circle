@@ -4,14 +4,22 @@
 #ifndef _vc4_vchiq_vchiqdevice_h
 #define _vc4_vchiq_vchiqdevice_h
 
-#include <linux/linuxdevice.h>
-#include <circle/memory.h>
-#include <circle/interrupt.h>
+#include <linux/platform_device.h>
+//#include <circle/types.h>
 
-class CVCHIQDevice : public CLinuxDevice
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+typedef struct CVCHIQDevice_s
 {
-public:
-	CVCHIQDevice (CMemorySystem *pMemory, CInterruptSystem *pInterrupt);
-};
+    struct platform_device m_PlatformDevice;
+} CVCHIQDevice;
+
+boolean CVCHIQDevice_Initialize (CVCHIQDevice *_this);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif
