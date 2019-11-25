@@ -143,11 +143,9 @@ LDFLAGS	+= --section-start=.init=$(LOADADDR)
 
 $(TARGET).img: $(OBJS) $(LIBS) $(CIRCLEHOME)/circle.ld
 	@echo "  LD    $(TARGET).elf"
-	@$(LD) -o $(TARGET).elf -Map $(TARGET).map $(LDFLAGS) \
+	@$(LD) -o $(TARGET).elf $(LDFLAGS) \
 		-T $(CIRCLEHOME)/circle.ld $(CRTBEGIN) $(OBJS) \
 		--start-group $(LIBS) $(EXTRALIBS) --end-group $(CRTEND)
-	@echo "  DUMP  $(TARGET).lst"
-	@$(PREFIX)objdump -d $(TARGET).elf | $(PREFIX)c++filt > $(TARGET).lst
 	@echo "  COPY  $(TARGET).img"
 	@$(PREFIX)objcopy $(TARGET).elf -O binary $(TARGET).img
 	@echo -n "  WC    $(TARGET).img => "
