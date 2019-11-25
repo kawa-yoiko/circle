@@ -4,7 +4,7 @@
 
 CIRCLEHOME = ../../../..
 
-OBJS	= main.o kernel.o
+OBJS	= main.o
 
 LIBS	= $(CIRCLEHOME)/addon/vc4/sound/libvchiqsound.a \
 	  $(CIRCLEHOME)/addon/vc4/vchiq/libvchiq.a \
@@ -16,7 +16,7 @@ EXTRACLEAN = sound.h
 
 include $(CIRCLEHOME)/Rules.mk
 
-kernel.o: sound.h
+main.o: sound.h
 
 sound.h: sound.h.gz
 	@echo "  UNZIP $@"
