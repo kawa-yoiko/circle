@@ -26,18 +26,23 @@ struct task_struct *current = 0;
 
 static int next_pid = 1;
 
+#define MAX_THREADS     16
+static task_struct tasks[MAX_THREADS];
+
 struct task_struct *kthread_create (int (*threadfn)(void *data),
 				    void *data,
 				    const char namefmt[], ...)
 {
-	task_struct *task = new task_struct;
+	int pid = next_pid++;
+	BUG_ON (pid >= MAX_THREADS);
 
-	task->pid = next_pid++;
+	task_struct *task = &tasks[pid];
+	task->pid = pid;
 	task->terminated = 0;
 	task->userdata = 0;
 
 	CTask *ctask = new CKThread (threadfn, data);
-	ctask->SetUserData (task);
+	ctask->SetUserData ((void *) pid);
 	task->taskobj = (void *) ctask;
 
 	return task;
@@ -59,8 +64,9 @@ void flush_signals (struct task_struct *task)
 
 static void task_switch_handler (CTask *ctask)
 {
-	current = (struct task_struct *) ctask->GetUserData ();
-	BUG_ON (current == 0);
+	int pid = (int) ctask->GetUserData ();
+	BUG_ON (pid < 0 || pid >= MAX_THREADS);
+	current = &tasks[pid];
 }
 
 static void task_termination_handler (CTask *ctask)

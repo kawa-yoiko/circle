@@ -8,6 +8,14 @@
 #include <circle/logger.h>
 #include <circle/stdarg.h>
 
+int SchedulerCreateThread (void (*fn) (void *), void *param)
+{
+}
+
+void SchedulerRegisterSwitchHandler (void (*fn) (int))
+{
+}
+
 void SchedulerYield ()
 {
 	CScheduler::Get ()->Yield ();

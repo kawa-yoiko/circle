@@ -7,7 +7,10 @@ extern "C" {
 
 #include <stdint.h>
 
+int SchedulerCreateThread (void (*fn) (void *), void *param);
+void SchedulerRegisterSwitchHandler (void (*fn) (int));
 void SchedulerYield ();
+
 void MsDelay (unsigned nMilliSeconds);
 void usDelay (unsigned nMicroSeconds);
 
