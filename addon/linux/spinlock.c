@@ -1,6 +1,5 @@
 #include <linux/spinlock.h>
 #include <circle/synchronize.h>
-#include <circle/multicore.h>
 
 #define SPINLOCK_SAVE_POWER
 

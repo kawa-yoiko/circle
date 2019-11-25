@@ -29,6 +29,9 @@
 
 #ifdef __cplusplus
 extern "C" {
+#define DEFAULT(_val)   = (_val)
+#else
+#define DEFAULT(_val)
 #endif
 
 //
@@ -52,7 +55,7 @@ unsigned CurrentExecutionLevel (void);
 #define	DisableFIQs()		asm volatile ("cpsid f")
 
 // EnterCritical() can be nested with same or increasing nTargetLevel
-void EnterCritical (unsigned nTargetLevel = IRQ_LEVEL);
+void EnterCritical (unsigned nTargetLevel DEFAULT(IRQ_LEVEL));
 void LeaveCritical (void);
 
 #if RASPPI == 1
@@ -127,6 +130,8 @@ void SyncDataAndInstructionCache (void);
 #endif
 
 #define CompilerBarrier()	asm volatile ("" ::: "memory")
+
+#undef DEFAULT
 
 #ifdef __cplusplus
 }

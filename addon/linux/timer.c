@@ -1,7 +1,12 @@
 #include <linux/timer.h>
 #include <linux/jiffies.h>
 #include <linux/spinlock.h>
-#include <circle/timer.h>
+#include <linux/env.h>
+
+// include/circle/timer.h
+#define HZ		100			// ticks per second
+
+#define MSEC2HZ(msec)	((msec) * HZ / 1000)
 
 unsigned long volatile jiffies = 0;
 
@@ -108,7 +113,7 @@ int linuxemu_init_timer (void)
 	INIT_LIST_HEAD (&timer_list);
 	spin_lock_init (&timer_lock);
 
-	CTimer::Get ()->RegisterPeriodicHandler (periodic_handler);
+	RegisterPeriodicHandler (periodic_handler);
 
 	return 0;
 }

@@ -1,7 +1,6 @@
 #include <linux/mutex.h>
 #include <linux/bug.h>
-#include <circle/sched/scheduler.h>
-#include <circle/multicore.h>
+#include <linux/env.h>
 
 void mutex_lock (struct mutex *lock)
 {
@@ -11,7 +10,7 @@ void mutex_lock (struct mutex *lock)
 
 	while (lock->lock != 0)
 	{
-		CScheduler::Get ()->Yield ();
+		SchedulerYield();
 	}
 
 	lock->lock = 1;

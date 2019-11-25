@@ -1,11 +1,11 @@
 #include <linux/interrupt.h>
 #include <linux/device.h>
 #include <linux/bug.h>
-#include <circle/interrupt.h>
+#include <linux/env.h>
 
 static void irq_stub (void *param)
 {
-	struct irqaction *irqaction = reinterpret_cast<struct irqaction *> (param);
+	struct irqaction *irqaction = (struct irqaction *) (param);
 
 	irqreturn_t ret = (*irqaction->handler) (irqaction->irq, irqaction->dev_id);
 
@@ -22,10 +22,7 @@ int __must_check devm_request_irq (struct device *dev, unsigned int irq, irq_han
 	dev->irqaction[0].flags = irqflags;
 	dev->irqaction[0].dev_id = dev_id;
 
-	CInterruptSystem *pInterruptSystem =
-		reinterpret_cast<CInterruptSystem *> (dev->pInterruptSystem);
-
-	pInterruptSystem->ConnectIRQ (irq, irq_stub, &dev->irqaction[0]);
+	ConnectInterrupt (irq, irq_stub, &dev->irqaction[0]);
 
 	return 0;
 }

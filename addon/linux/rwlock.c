@@ -1,7 +1,6 @@
 #include <linux/rwlock.h>
 #include <linux/bug.h>
-#include <circle/sched/scheduler.h>
-#include <circle/multicore.h>
+#include <linux/env.h>
 
 #define WRITE_LOCK	(1U << 31)
 
@@ -15,7 +14,7 @@ void read_lock_bh (rwlock_t *lock)
 
 	while (lock->lock >= WRITE_LOCK)
 	{
-		CScheduler::Get ()->Yield ();
+		SchedulerYield();
 	}
 }
 
@@ -38,7 +37,7 @@ void write_lock_bh (rwlock_t *lock)
 
 	while ((lock->lock & ~WRITE_LOCK) != 0)
 	{
-		CScheduler::Get ()->Yield ();
+		SchedulerYield();
 	}
 }
 
