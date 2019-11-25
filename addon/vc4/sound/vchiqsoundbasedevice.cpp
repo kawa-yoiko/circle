@@ -46,7 +46,7 @@ CVCHIQSoundBaseDevice::CVCHIQSoundBaseDevice (CVCHIQDevice *pVCHIQDevice,
 	//assert (44100 <= nSampleRate && nSampleRate <= 48000);
 	assert (Destination < VCHIQSoundDestinationUnknown);
 
-	CDeviceNameService::Get ()->AddDevice ("sndvchiq", this, FALSE);
+	//CDeviceNameService::Get ()->AddDevice ("sndvchiq", this, FALSE);
 }
 
 CVCHIQSoundBaseDevice::~CVCHIQSoundBaseDevice (void)

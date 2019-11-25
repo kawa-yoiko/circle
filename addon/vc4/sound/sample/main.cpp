@@ -37,13 +37,13 @@
 CMemorySystem       m_Memory;
 //CActLED             m_ActLED;
 //CKernelOptions      m_Options;
-CDeviceNameService  m_DeviceNameService;
+//CDeviceNameService  m_DeviceNameService;
 CScreenDevice       m_Screen (800, 480);
 //CSerialDevice       m_Serial;
-CExceptionHandler   m_ExceptionHandler;
+//CExceptionHandler   m_ExceptionHandler;
 CInterruptSystem    m_Interrupt;
 CTimer              m_Timer (&m_Interrupt);
-CLogger             m_Logger (LogDebug, &m_Timer);
+CLogger             m_Logger (LogDebug, 0);
 CScheduler          m_Scheduler;
 
 CVCHIQDevice        m_VCHIQ (&m_Memory, &m_Interrupt);
