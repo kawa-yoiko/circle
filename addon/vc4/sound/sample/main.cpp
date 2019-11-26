@@ -46,6 +46,7 @@ CVCHIQSoundBaseDevice   m_VCHIQSound;
 
 static void Initialize ();
 static void Run ();
+extern "C" void qwq_irq_stub ();
 
 int main (void)
 {
@@ -87,7 +88,11 @@ void Initialize (void)
 
 	if (bOK)
 	{
-		bOK = m_Interrupt.Initialize ();
+		uint32_t *irq = (uint32_t *)0x18;
+		*irq = 0xea000000 | ((uint32_t *)qwq_irq_stub - irq - 2);
+
+		//SyncDataAndInstructionCache();
+		__asm__ __volatile__ ("cpsie i");
 	}
 
 	if (bOK)
