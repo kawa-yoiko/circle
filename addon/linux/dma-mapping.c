@@ -1,5 +1,7 @@
 #include <linux/dma-mapping.h>
-#include <circle/bcm2835.h>
+#include <linux/envdefs.h>
+
+#define BUS_ADDRESS(addr)	(((addr) & ~0xC0000000) | GPU_MEM_BASE)
 
 void *dmam_alloc_coherent (struct device *dev, size_t size, dma_addr_t *dma_handle, gfp_t gfp)
 {

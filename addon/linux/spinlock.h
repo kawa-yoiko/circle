@@ -3,7 +3,7 @@
 
 #include <linux/rwlock.h>
 #include <linux/types.h>
-#include <circle/sysconfig.h>
+#include <linux/envdefs.h>
 
 #ifdef __cplusplus
 extern "C" {

@@ -5,4 +5,8 @@
 // See circle/bcm2835.h
 #define GPU_MEM_BASE 0x40000000
 
+#undef ARM_ALLOW_MULTI_CORE
+
+#define PAGE_SIZE 4096
+
 #endif

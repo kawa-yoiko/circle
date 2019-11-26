@@ -5,6 +5,7 @@
 extern "C" {
 #endif
 
+#include <stddef.h>
 #include <stdint.h>
 
 void SchedulerInitialize ();
@@ -33,6 +34,9 @@ void LogWrite (const char *pSource,         // short name of module
                const char *pMessage, ...);  // uses printf format options
 
 void *GetCoherentRegion512K ();
+
+void *qwq_malloc (size_t size);
+void qwq_free (void *ptr);
 
 #ifdef __cplusplus
 }

@@ -1,5 +1,5 @@
 #include <linux/spinlock.h>
-#include <circle/synchronize.h>
+#include <linux/synchronize.h>
 
 #define SPINLOCK_SAVE_POWER
 
@@ -7,7 +7,7 @@
 
 void spin_lock (spinlock_t *lock)
 {
-	EnterCritical (IRQ_LEVEL);
+	linuxemu_EnterCritical ();
 
 #if AARCH == 32
 	// See: ARMv7-A Architecture Reference Manual, Section D7.3
@@ -72,19 +72,19 @@ void spin_unlock (spinlock_t *lock)
 	);
 #endif
 
-	LeaveCritical ();
+	linuxemu_LeaveCritical ();
 }
 
 #else
 
 void spin_lock (spinlock_t *lock)
 {
-	EnterCritical (IRQ_LEVEL);
+	linuxemu_EnterCritical ();
 }
 
 void spin_unlock (spinlock_t *lock)
 {
-	LeaveCritical ();
+	linuxemu_LeaveCritical ();
 }
 
 #endif

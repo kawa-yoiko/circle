@@ -2,7 +2,7 @@
 #define _linux_uaccess_h
 
 #include <linux/compiler.h>
-#include <circle/util.h>
+#include <string.h>
 
 #ifdef __cplusplus
 extern "C" {

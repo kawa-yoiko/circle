@@ -40,7 +40,7 @@
 #include <linux/kthread.h>
 #include <linux/jiffies.h>
 #include <linux/delay.h>
-#include <linux/string.h>
+#include <string.h>
 #include <linux/types.h>
 #include <linux/interrupt.h>
 #include <linux/sched.h>

@@ -6,7 +6,7 @@
 #include <linux/bug.h>
 #include <linux/barrier.h>
 #include <linux/types.h>
-#include <circle/stdarg.h>
+#include <stdarg.h>
 
 #ifdef __cplusplus
 extern "C" {

@@ -1,7 +1,7 @@
 #ifndef _linux_atomic_h
 #define _linux_atomic_h
 
-#include <circle/sysconfig.h>
+#include <linux/envdefs.h>
 #include <linux/types.h>
 
 #ifdef __cplusplus

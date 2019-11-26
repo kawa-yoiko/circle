@@ -56,8 +56,7 @@
 extern void dmac_map_area(const void *, size_t, int);
 extern void dmac_unmap_area(const void *, size_t, int);
 #else
-// TODO: Separate this from libcircle
-void CleanAndInvalidateDataCacheRange (uintptr_t nAddress, size_t nLength);
+#include <linux/synchronize.h>
 #endif
 
 #define TOTAL_SLOTS (VCHIQ_SLOT_ZERO_SLOTS + 2 * 32)
@@ -465,7 +464,7 @@ create_pagelist(char __user *buf, size_t count, unsigned short type,
 #ifndef __circle__
 			dmac_map_area(page_address(pg) + off, bytes, dir);
 #else
-			CleanAndInvalidateDataCacheRange ((uintptr_t) pg + off, bytes);
+			linuxemu_CleanAndInvalidateDataCacheRange ((uintptr_t) pg + off, bytes);
 #endif
 			length -= bytes;
 			off = 0;
@@ -557,7 +556,7 @@ create_pagelist(char __user *buf, size_t count, unsigned short type,
 
 	dmac_flush_range(pagelist, addrs + num_pages);
 #else
-	CleanAndInvalidateDataCacheRange ((uintptr_t) pagelist,
+	linuxemu_CleanAndInvalidateDataCacheRange ((uintptr_t) pagelist,
 					  (uintptr_t) (addrs + num_pages) - (uintptr_t) pagelist);
 #endif
 

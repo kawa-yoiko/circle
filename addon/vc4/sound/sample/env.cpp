@@ -1,4 +1,5 @@
 #include <linux/env.h>
+#include <circle/alloc.h>
 #include <circle/logger.h>
 
 #include "coroutine.h"
@@ -161,4 +162,14 @@ u32 CMemorySystem_GetCoherentPage (unsigned nSlot)
 void *GetCoherentRegion512K ()
 {
 	return (void *) CMemorySystem_GetCoherentPage (COHERENT_SLOT_VCHIQ_START);
+}
+
+void *qwq_malloc (size_t size)
+{
+	return malloc (size);
+}
+
+void qwq_free (void *ptr)
+{
+	free (ptr);
 }
