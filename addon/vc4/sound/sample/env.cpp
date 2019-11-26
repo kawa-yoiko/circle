@@ -1,5 +1,5 @@
 #include <linux/env.h>
-#include <circle/alloc.h>
+#include <linux/synchronize.h>
 #include <circle/logger.h>
 
 #include "coroutine.h"
@@ -164,12 +164,18 @@ void *GetCoherentRegion512K ()
 	return (void *) CMemorySystem_GetCoherentPage (COHERENT_SLOT_VCHIQ_START);
 }
 
+static char pool[1048576 * 32];
+static size_t ptr = 0;
+
 void *qwq_malloc (size_t size)
 {
-	return malloc (size);
+	linuxemu_EnterCritical();
+	void *ret = (void *)(pool + ptr);
+	ptr += size;
+	linuxemu_LeaveCritical();
+	return ret;
 }
 
 void qwq_free (void *ptr)
 {
-	free (ptr);
 }
