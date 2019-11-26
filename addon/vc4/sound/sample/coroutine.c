@@ -85,7 +85,6 @@ void co_next(int8_t id)
         regs[id].sp = (uint32_t)&stack_space[id + 1];
         co_jump_arg(&main_regs, &regs[id], args[id]);
     } else {
-        //printk("switch to %d, PC = %x", (int)id, regs[id].pc);
         co_jump(&main_regs, &regs[id]);
     }
 }

@@ -1,5 +1,4 @@
 #include <linux/env.h>
-#include <circle/sched/scheduler.h>
 #include <circle/timer.h>
 #include <circle/interrupt.h>
 #include <circle/bcmpropertytags.h>
@@ -8,60 +7,28 @@
 #include <circle/logger.h>
 #include <circle/stdarg.h>
 
-class CKThread : public CTask
-{
-public:
-	CKThread (int (*threadfn) (void *data), void *data)
-	:	m_threadfn (threadfn),
-		m_data (data)
-	{
-	}
-
-	void Run (void)
-	{
-		(*m_threadfn) (m_data);
-	}
-
-private:
-	int (*m_threadfn) (void *data);
-	void *m_data;
-};
-
-static int next_pid = 1;
+#include "coroutine.h"
 
 void SchedulerInitialize ()
 {
-	CTask *ctask = CScheduler::Get ()->GetCurrentTask ();
-	ctask->SetUserData (0);
 }
 
 int SchedulerCreateThread (int (*fn) (void *), void *param)
 {
-	int pid = next_pid++;
-
-	CTask *ctask = new CKThread (fn, param);
-	ctask->SetUserData ((void *) pid);
-
-	return pid;
+	// Such function pointer casts are safe for most platforms including ARM
+	return co_create((void (*)(void *))(fn), param);
 }
 
 void (*switch_handler) (int) = 0;
 
-static void switch_handler_wrapper (CTask *task)
-{
-	if (switch_handler != 0)
-		switch_handler((int) task->GetUserData ());
-}
-
 void SchedulerRegisterSwitchHandler (void (*fn) (int))
 {
-	switch_handler = fn;
-	CScheduler::Get ()->RegisterTaskSwitchHandler (switch_handler_wrapper);
+	co_callback((void (*)(int8_t))fn);
 }
 
 void SchedulerYield ()
 {
-	CScheduler::Get ()->Yield ();
+	co_yield();
 }
 
 void usDelay (unsigned nMicroSeconds)
@@ -71,7 +38,7 @@ void usDelay (unsigned nMicroSeconds)
 
 void MsDelay (unsigned nMilliSeconds)
 {
-	CScheduler::Get ()->MsSleep (nMilliSeconds);
+	CTimer::Get ()->usDelay (nMilliSeconds * 1000);
 }
 
 void RegisterPeriodicHandler (TPeriodicTimerHandler *pHandler)

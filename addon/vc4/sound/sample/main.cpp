@@ -24,12 +24,12 @@
 #include <circle/interrupt.h>
 #include <circle/timer.h>
 #include <circle/logger.h>
-#include <circle/sched/scheduler.h>
 #include <vc4/vchiq/vchiqdevice.h>
 #include <vc4/sound/vchiqsoundbasedevice.h>
 #include <circle/types.h>
 
 #include <math.h>
+#include <linux/env.h>
 #include "coroutine.h"
 
 #ifndef M_PI
@@ -41,7 +41,6 @@ CScreenDevice       m_Screen (800, 480);
 CInterruptSystem    m_Interrupt;
 CTimer              m_Timer (&m_Interrupt);
 CLogger             m_Logger (LogDebug, 0);
-CScheduler          m_Scheduler;
 
 CVCHIQDevice		    m_VCHIQ;
 CVCHIQSoundBaseDevice   m_VCHIQSound;
@@ -116,29 +115,12 @@ void PlaybackThread (void *_unused)
 		{
 			m_Screen.Rotor (0, nCount);
 
-			m_Scheduler.Yield ();
+			co_yield();
 		}
 
 		m_Logger.Write (FromKernel, LogNotice, "Playback completed");
 
-		m_Scheduler.Sleep (2);
-	}
-}
-
-__attribute__((noinline)) void iterate(int count)
-{
-	for (int i = 0, s = 0; i < count; i++) {
-		s += i;
-		m_Logger.Write(FromKernel, LogNotice, "> %d", s);
-		co_yield();
-	}
-}
-
-void fn(void *_unused)
-{
-	for (int i = 1; ; i++) {
-		m_Logger.Write(FromKernel, LogNotice, "== %d ==", i);
-		iterate(i);
+		MsDelay (2000);
 	}
 }
 
@@ -148,9 +130,8 @@ void Run (void)
 
 	m_VCHIQSound.chunk_cb = synth;
 
-	int id = co_create(fn, 0);
+	int id = co_create(PlaybackThread, 0);
 	while (1) {
 		for (int i = 1; i <= 16; i++) co_next(i);
-		m_Scheduler.Sleep(1);
 	}
 }
