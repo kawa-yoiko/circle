@@ -24,6 +24,7 @@
 #include <vc4/sound/vchiqsoundbasedevice.h>
 
 #include <math.h>
+#include <linux/assert.h>
 #include <linux/env.h>
 #include "coroutine.h"
 #include "common.h"
@@ -34,8 +35,6 @@
 #ifndef M_PI
 #define M_PI 3.1415926535897932384626433832795
 #endif
-
-CLogger             m_Logger (LogDebug, 0);
 
 CVCHIQDevice		    m_VCHIQ;
 CVCHIQSoundBaseDevice   m_VCHIQSound;
@@ -163,12 +162,8 @@ void EnableMMU (void)
 	asm volatile ("mcr p15, 0, %0, c1, c0,  0" : : "r" (nControl) : "memory");
 }
 
-// circle/alloc.h
-extern "C" void mem_init (unsigned long ulBase, unsigned long ulSize);
-
 void Initialize (void)
 {
-	mem_init(0, 256 * 1024 * 1024);
 	EnableMMU ();
 
 	boolean bOK = TRUE;
@@ -197,14 +192,10 @@ void PlaybackThread (void *_unused)
 	{
 		CVCHIQSoundBaseDevice_Start(&m_VCHIQSound);
 
-		m_Logger.Write (FromKernel, LogNotice, "Playback started");
-
 		for (unsigned nCount = 0; CVCHIQSoundBaseDevice_IsActive (&m_VCHIQSound); nCount++)
 		{
 			co_yield();
 		}
-
-		m_Logger.Write (FromKernel, LogNotice, "Playback completed");
 
 		MsDelay (2000);
 	}
@@ -212,13 +203,10 @@ void PlaybackThread (void *_unused)
 
 void Run (void)
 {
-	m_Logger.Write (FromKernel, LogNotice, "Compile time: " __DATE__ " " __TIME__);
-
 	m_VCHIQSound.chunk_cb = synth;
 
 	int id = co_create(PlaybackThread, 0);
 	while (1) {
 		for (int i = 1; i <= 16; i++) co_next(i);
-		//m_Logger.Write(FromKernel, LogNotice, "%u %u %u %u %u\n", *SYSTMR_CLO, *SYSTMR_C0, *SYSTMR_C1, *SYSTMR_C2, *SYSTMR_C3);
 	}
 }

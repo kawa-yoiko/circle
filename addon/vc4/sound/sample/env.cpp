@@ -143,7 +143,7 @@ void LogWrite (const char *pSource,
 	va_list var;
 	va_start (var, pMessage);
 
-	CLogger::Get ()->WriteV (pSource, (TLogSeverity) Severity, pMessage, var);
+	//CLogger::Get ()->WriteV (pSource, (TLogSeverity) Severity, pMessage, var);
 
 	va_end (var);
 }
@@ -177,5 +177,9 @@ void *qwq_malloc (size_t size)
 }
 
 void qwq_free (void *ptr)
+{
+}
+
+void qwq_assertion_failed (const char *pExpr, const char *pFile, unsigned nLine)
 {
 }

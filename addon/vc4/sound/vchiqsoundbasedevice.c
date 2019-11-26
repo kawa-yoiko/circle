@@ -22,7 +22,7 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
 #include <vc4/sound/vchiqsoundbasedevice.h>
-#include <assert.h>
+#include <linux/assert.h>
 #include <linux/env.h>
 
 #define LOG(...)

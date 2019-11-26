@@ -3,14 +3,14 @@
 
 #include <linux/compiler.h>
 #include <linux/printk.h>
-#include <assert.h>
+#include <linux/assert.h>
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-#define BUG_ON(exp)	((void) 0)  // assert (!(exp))
-#define BUG()		((void) 0)  // assert (0)
+#define BUG_ON(exp)	assert (!(exp))
+#define BUG()		assert (0)
 
 void __warn (const char *file, const int line);
 #define __WARN()	__warn (__FILE__, __LINE__)

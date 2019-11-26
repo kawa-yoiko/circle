@@ -8,6 +8,8 @@ extern "C" {
 #include <stddef.h>
 #include <stdint.h>
 
+void qwq_assertion_failed (const char *pExpr, const char *pFile, unsigned nLine);
+
 void SchedulerInitialize ();
 int SchedulerCreateThread (int (*fn) (void *), void *param);
 void SchedulerRegisterSwitchHandler (void (*fn) (int));

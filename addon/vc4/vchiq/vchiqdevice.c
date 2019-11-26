@@ -18,7 +18,7 @@
 #define ARM_IRQ_ARM_DOORBELL_0	66
 
 #include <linux/linuxemu.h>
-#include <assert.h>
+#include <linux/assert.h>
 #include <string.h>
 
 #include <linux/env.h>
