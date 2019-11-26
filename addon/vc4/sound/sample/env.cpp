@@ -128,7 +128,7 @@ void env_init()
 uint32_t EnableVCHIQ (uint32_t buf)
 {
 	typedef mbox_buf(4) proptag;
-	proptag *mboxbuf = (proptag *)(MEM_COHERENT_REGION + 4 * PAGE_SIZE);
+	proptag *mboxbuf = (proptag *)(0x1c00000 + 4 * PAGE_SIZE);
 	mbox_init(*mboxbuf);
 	mboxbuf->tag.id = 0x48010;
 	mboxbuf->tag.u32[0] = buf;
@@ -154,7 +154,7 @@ void LogWrite (const char *pSource,
 // TODO: Make this work with 64-bit
 u32 CMemorySystem_GetCoherentPage (unsigned nSlot)
 {
-	u32 nPageAddress = MEM_COHERENT_REGION;
+	u32 nPageAddress = 0x1c00000;
 	nPageAddress += nSlot * PAGE_SIZE;
 	return nPageAddress;
 }
