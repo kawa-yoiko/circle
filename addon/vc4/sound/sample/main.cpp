@@ -21,7 +21,6 @@
 
 #include <circle/memory.h>
 #include <circle/screen.h>
-#include <circle/interrupt.h>
 #include <circle/logger.h>
 #include <vc4/vchiq/vchiqdevice.h>
 #include <vc4/sound/vchiqsoundbasedevice.h>
@@ -38,7 +37,6 @@
 
 CMemorySystem       m_Memory;
 CScreenDevice       m_Screen (800, 480);
-CInterruptSystem    m_Interrupt;
 CLogger             m_Logger (LogDebug, 0);
 
 CVCHIQDevice		    m_VCHIQ;

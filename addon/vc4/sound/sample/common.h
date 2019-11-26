@@ -46,8 +46,11 @@ extern "C" {
 #define INT_IRQPEND1    (volatile uint32_t *)(INT_BASE + 0x204)
 #define INT_IRQPEND2    (volatile uint32_t *)(INT_BASE + 0x208)
 #define INT_IRQENAB1    (volatile uint32_t *)(INT_BASE + 0x210)
-#define INT_IRQDISA1    (volatile uint32_t *)(INT_BASE + 0x21c)
+#define INT_IRQENAB2    (volatile uint32_t *)(INT_BASE + 0x214)
 #define INT_IRQBASENAB  (volatile uint32_t *)(INT_BASE + 0x218)
+#define INT_IRQDISA1    (volatile uint32_t *)(INT_BASE + 0x21c)
+#define INT_IRQDISA2    (volatile uint32_t *)(INT_BASE + 0x220)
+#define INT_IRQBASDISA  (volatile uint32_t *)(INT_BASE + 0x224)
 
 #define INT_IRQ_ARMTMR  1
 

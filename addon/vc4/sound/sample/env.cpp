@@ -65,8 +65,15 @@ void set_irq_handler(uint8_t source, irq_handler f, void *arg)
 	handlers[source] = f;
 	args[source] = arg;
 	DMB(); DSB();
-	if (f) *INT_IRQENAB1 = (1 << source);
-	else *INT_IRQDISA1 = (1 << source);
+	if (f) {
+		if (source < 32) *INT_IRQENAB1 = (1 << source);
+		else if (source < 64) *INT_IRQENAB2 = (1 << (source - 32));
+		else if (source < 72) *INT_IRQBASENAB = (1 << (source - 64));
+	} else {
+		if (source < 32) *INT_IRQDISA1 = (1 << source);
+		else if (source < 64) *INT_IRQDISA2 = (1 << (source - 32));
+		else if (source < 72) *INT_IRQBASDISA = (1 << (source - 64));
+	}
 	DMB(); DSB();
 }
 
@@ -91,7 +98,6 @@ void /*__attribute__((interrupt("IRQ")))*/ _int_irq()
 		DMB(); DSB();
 		return;
 	}
-	if (source >= 4) LogWrite("int", LOG_NOTICE, "interrupt %d", (int)source);
 
 	if (handlers[source]) (*handlers[source])(args[source]);
 	DMB(); DSB();
@@ -99,7 +105,7 @@ void /*__attribute__((interrupt("IRQ")))*/ _int_irq()
 
 void ConnectInterrupt (unsigned nIRQ, TInterruptHandler *pHandler, void *pParam)
 {
-	CInterruptSystem::Get ()->ConnectIRQ (nIRQ, pHandler, pParam);
+	set_irq_handler(nIRQ, pHandler, pParam);
 }
 
 #define T1_INTV	(1000000 / 100)
