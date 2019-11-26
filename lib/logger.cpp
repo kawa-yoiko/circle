@@ -220,7 +220,7 @@ void CLogger::Write (const char *pString)
 {
 	unsigned long nLength = strlen (pString);
 
-	m_pTarget->Write (pString, nLength);
+	//m_pTarget->Write (pString, nLength);
 
 	m_SpinLock.Acquire ();
 

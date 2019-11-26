@@ -20,7 +20,6 @@
 #include <circle/startup.h>
 
 #include <circle/memory.h>
-#include <circle/screen.h>
 #include <circle/logger.h>
 #include <vc4/vchiq/vchiqdevice.h>
 #include <vc4/sound/vchiqsoundbasedevice.h>
@@ -35,7 +34,6 @@
 #endif
 
 CMemorySystem       m_Memory;
-CScreenDevice       m_Screen (800, 480);
 CLogger             m_Logger (LogDebug, 0);
 
 CVCHIQDevice		    m_VCHIQ;
@@ -75,16 +73,6 @@ void Initialize (void)
 
 	if (bOK)
 	{
-		bOK = m_Screen.Initialize ();
-	}
-
-	if (bOK)
-	{
-		bOK = m_Logger.Initialize (&m_Screen);
-	}
-
-	if (bOK)
-	{
 		uint32_t *irq = (uint32_t *)0x18;
 		*irq = 0xea000000 | ((uint32_t *)qwq_irq_stub - irq - 2);
 
@@ -111,8 +99,6 @@ void PlaybackThread (void *_unused)
 
 		for (unsigned nCount = 0; CVCHIQSoundBaseDevice_IsActive (&m_VCHIQSound); nCount++)
 		{
-			m_Screen.Rotor (0, nCount);
-
 			co_yield();
 		}
 
