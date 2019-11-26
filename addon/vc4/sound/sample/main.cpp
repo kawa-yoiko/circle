@@ -57,6 +57,8 @@ unsigned synth(int16_t *buf, unsigned chunk_size)
 {
 	//uint32_t seed = 20191118;
 	static uint8_t phase = 0;
+	static uint32_t count = 0;
+	if (count >= 131072) { count = 0; return 0; }
 	for (unsigned i = 0; i < chunk_size; i += 2) {
 		//seed = ((seed * 1103515245) + 12345) & 0x7fffffff;
 		//buf[i] = (int16_t)(seed & 0xffff);
@@ -64,6 +66,7 @@ unsigned synth(int16_t *buf, unsigned chunk_size)
 		buf[i] = buf[i + 1] = sample;
 		phase += 2; // Folds over to 0 ~ 255, generates 344.5 Hz (F4 - ~1/4 semitone)
 	}
+	count += (chunk_size >> 1);
 	return chunk_size;
 }
 
