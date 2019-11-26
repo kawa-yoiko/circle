@@ -2,12 +2,24 @@
 // vchiqdevice.cpp
 //
 #include <vc4/vchiq/vchiqdevice.h>
-#include <circle/bcm2835.h>
-#include <circle/bcm2835int.h>
+
+// circle/bcm2835.h
+#if RASPPI == 1
+#define ARM_IO_BASE		0x20000000
+#elif RASPPI <= 3
+#define ARM_IO_BASE		0x3F000000
+#else
+#define ARM_IO_BASE		0xFE000000
+#endif
+#define ARM_VCHIQ_BASE		(ARM_IO_BASE + 0xB840)
+#define ARM_VCHIQ_END		(ARM_VCHIQ_BASE + 0x0F)
+
+// circle/bcm2835int.h; all models use IRQ number 66
+#define ARM_IRQ_ARM_DOORBELL_0	66
 
 #include <linux/linuxemu.h>
-#include <circle/util.h>
 #include <assert.h>
+#include <string.h>
 
 #include <linux/env.h>
 

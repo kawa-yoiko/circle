@@ -24,7 +24,6 @@
 extern "C" {
 #endif
 
-#include <circle/types.h>
 #include <stdint.h>
 #include <vc4/vchiq/vchiqdevice.h>
 #include <vc4/vchi/vchi.h>

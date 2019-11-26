@@ -65,7 +65,7 @@ void CleanAndInvalidateDataCacheRange (uintptr_t nAddress, size_t nLength);
 #ifndef __circle__
 #define VCHIQ_ARM_ADDRESS(x) ((void *)((char *)x + g_virt_to_bus_offset))
 #else
-#include <circle/bcm2835.h>
+#include <linux/envdefs.h>
 #define VCHIQ_ARM_ADDRESS(x) ((void *)((char *)x + GPU_MEM_BASE))
 #endif
 
