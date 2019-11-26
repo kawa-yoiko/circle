@@ -8,6 +8,7 @@
 #include <circle/stdarg.h>
 
 #include "coroutine.h"
+#include "common.h"
 
 void SchedulerInitialize ()
 {
@@ -33,22 +34,48 @@ void SchedulerYield ()
 
 void usDelay (unsigned nMicroSeconds)
 {
-	CTimer::Get ()->usDelay (nMicroSeconds);
+	DMB(); DSB();
+	uint32_t val = *SYSTMR_CLO + nMicroSeconds;
+	while (*SYSTMR_CLO < val) { }
+	DMB(); DSB();
 }
 
 void MsDelay (unsigned nMilliSeconds)
 {
-	CTimer::Get ()->usDelay (nMilliSeconds * 1000);
+	usDelay(nMilliSeconds * 1000);
 }
+
+static TPeriodicTimerHandler *periodic = NULL;
 
 void RegisterPeriodicHandler (TPeriodicTimerHandler *pHandler)
 {
-	CTimer::Get ()->RegisterPeriodicHandler (pHandler);
+	periodic = pHandler;
 }
 
 void ConnectInterrupt (unsigned nIRQ, TInterruptHandler *pHandler, void *pParam)
 {
 	CInterruptSystem::Get ()->ConnectIRQ (nIRQ, pHandler, pParam);
+}
+
+#define T1_INTV	(1000000 / 100)
+
+void timer1_handler(void *_unused)
+{
+	DMB(); DSB();
+	uint32_t cur = *SYSTMR_CLO;
+	uint32_t val = *SYSTMR_C1 + T1_INTV;
+	if (val <= cur) val = cur + T1_INTV;
+	*SYSTMR_C1 = val;
+	*SYSTMR_CS = (1 << 1);
+	DMB(); DSB();
+
+	if (periodic) periodic();
+}
+
+void env_init()
+{
+	*SYSTMR_C1 = *SYSTMR_CLO + T1_INTV;
+	ConnectInterrupt(1, timer1_handler, NULL);
 }
 
 

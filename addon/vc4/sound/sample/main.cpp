@@ -22,7 +22,6 @@
 #include <circle/memory.h>
 #include <circle/screen.h>
 #include <circle/interrupt.h>
-#include <circle/timer.h>
 #include <circle/logger.h>
 #include <vc4/vchiq/vchiqdevice.h>
 #include <vc4/sound/vchiqsoundbasedevice.h>
@@ -31,6 +30,7 @@
 #include <math.h>
 #include <linux/env.h>
 #include "coroutine.h"
+#include "common.h"
 
 #ifndef M_PI
 #define M_PI 3.1415926535897932384626433832795
@@ -39,7 +39,6 @@
 CMemorySystem       m_Memory;
 CScreenDevice       m_Screen (800, 480);
 CInterruptSystem    m_Interrupt;
-CTimer              m_Timer (&m_Interrupt);
 CLogger             m_Logger (LogDebug, 0);
 
 CVCHIQDevice		    m_VCHIQ;
@@ -93,14 +92,11 @@ void Initialize (void)
 
 	if (bOK)
 	{
-		bOK = m_Timer.Initialize ();
-	}
-
-	if (bOK)
-	{
 		bOK = CVCHIQDevice_Initialize(&m_VCHIQ);
 		CVCHIQSoundBaseDevice_Ctor(&m_VCHIQSound, &m_VCHIQ, 44100, 4000, VCHIQSoundDestinationAuto);
 	}
+
+	env_init();
 }
 
 void PlaybackThread (void *_unused)
@@ -133,5 +129,6 @@ void Run (void)
 	int id = co_create(PlaybackThread, 0);
 	while (1) {
 		for (int i = 1; i <= 16; i++) co_next(i);
+		//m_Logger.Write(FromKernel, LogNotice, "%u %u %u %u %u\n", *SYSTMR_CLO, *SYSTMR_C0, *SYSTMR_C1, *SYSTMR_C2, *SYSTMR_C3);
 	}
 }
