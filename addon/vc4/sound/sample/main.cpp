@@ -19,7 +19,6 @@
 //
 #include <circle/startup.h>
 
-#include <circle/memory.h>
 #include <circle/logger.h>
 #include <vc4/vchiq/vchiqdevice.h>
 #include <vc4/sound/vchiqsoundbasedevice.h>
@@ -29,11 +28,13 @@
 #include "coroutine.h"
 #include "common.h"
 
+#include <circle/pagetable.h>
+#include <circle/armv6mmu.h>
+
 #ifndef M_PI
 #define M_PI 3.1415926535897932384626433832795
 #endif
 
-CMemorySystem       m_Memory;
 CLogger             m_Logger (LogDebug, 0);
 
 CVCHIQDevice		    m_VCHIQ;
@@ -67,8 +68,109 @@ unsigned synth(int16_t *buf, unsigned chunk_size)
 	return chunk_size;
 }
 
+static CPageTable m_pageTable(256 * 1024 * 1024);
+static CPageTable *m_pPageTable = &m_pageTable;
+
+#if RASPPI == 1
+#define MMU_MODE	(  ARM_CONTROL_MMU			\
+			 | ARM_CONTROL_L1_CACHE			\
+			 | ARM_CONTROL_L1_INSTRUCTION_CACHE	\
+			 | ARM_CONTROL_BRANCH_PREDICTION	\
+			 | ARM_CONTROL_EXTENDED_PAGE_TABLE)
+#else
+#define MMU_MODE	(  ARM_CONTROL_MMU			\
+			 | ARM_CONTROL_L1_CACHE			\
+			 | ARM_CONTROL_L1_INSTRUCTION_CACHE	\
+			 | ARM_CONTROL_BRANCH_PREDICTION)
+#endif
+
+#define TTBCR_SPLIT	0
+
+void EnableMMU (void)
+{
+#if RASPPI <= 3
+	u32 nAuxControl;
+	asm volatile ("mrc p15, 0, %0, c1, c0,  1" : "=r" (nAuxControl));
+#if RASPPI == 1
+	nAuxControl |= ARM_AUX_CONTROL_CACHE_SIZE;	// restrict cache size (no page coloring)
+#else
+	nAuxControl |= ARM_AUX_CONTROL_SMP;
+#endif
+	asm volatile ("mcr p15, 0, %0, c1, c0,  1" : : "r" (nAuxControl));
+
+	u32 nTLBType;
+	asm volatile ("mrc p15, 0, %0, c0, c0,  3" : "=r" (nTLBType));
+	assert (!(nTLBType & ARM_TLB_TYPE_SEPARATE_TLBS));
+
+	// set TTB control
+	asm volatile ("mcr p15, 0, %0, c2, c0,  2" : : "r" (TTBCR_SPLIT));
+
+	// set TTBR0
+	assert (m_pPageTable != 0);
+	asm volatile ("mcr p15, 0, %0, c2, c0,  0" : : "r" (m_pPageTable->GetBaseAddress ()));
+#else	// RASPPI <= 3
+	// set MAIR0
+	u32 nMAIR0 =   LPAE_MAIR_NORMAL   << ATTRINDX_NORMAL*8
+                     | LPAE_MAIR_DEVICE   << ATTRINDX_DEVICE*8
+	             | LPAE_MAIR_COHERENT << ATTRINDX_COHERENT*8;
+	asm volatile ("mcr p15, 0, %0, c10, c2, 0" : : "r" (nMAIR0));
+
+	// set TTBCR
+	asm volatile ("mcr p15, 0, %0, c2, c0,  2" : : "r" (
+		        LPAE_TTBCR_EAE
+		      | LPAE_TTBCR_EPD1
+		      | ATTRIB_SH_INNER_SHAREABLE << LPAE_TTBCR_SH0__SHIFT
+		      | LPAE_TTBCR_ORGN0_WR_BACK_ALLOCATE << LPAE_TTBCR_ORGN0__SHIFT
+		      | LPAE_TTBCR_IRGN0_WR_BACK_ALLOCATE << LPAE_TTBCR_IRGN0__SHIFT
+		      | LPAE_TTBCR_T0SZ_4GB));
+
+	// set TTBR0
+	assert (m_pPageTable != 0);
+	u64 nBaseAddress = m_pPageTable->GetBaseAddress ();
+	asm volatile ("mcrr p15, 0, %0, %1, c2" : : "r" ((u32) nBaseAddress),
+						    "r" ((u32) (nBaseAddress >> 32)));
+#endif	// RASPPI <= 3
+
+	// set Domain Access Control register (Domain 0 to client)
+	asm volatile ("mcr p15, 0, %0, c3, c0,  0" : : "r" (DOMAIN_CLIENT << 0));
+
+#ifndef ARM_ALLOW_MULTI_CORE
+	InvalidateDataCache ();
+#else
+	InvalidateDataCacheL1Only ();
+#endif
+
+	// required if MMU was previously enabled and not properly reset
+	InvalidateInstructionCache ();
+	FlushBranchTargetCache ();
+	asm volatile ("mcr p15, 0, %0, c8, c7,  0" : : "r" (0));	// invalidate unified TLB
+	DataSyncBarrier ();
+	FlushPrefetchBuffer ();
+
+	// enable MMU
+	u32 nControl;
+	asm volatile ("mrc p15, 0, %0, c1, c0,  0" : "=r" (nControl));
+#if RASPPI == 1
+#ifdef ARM_STRICT_ALIGNMENT
+	nControl &= ~ARM_CONTROL_UNALIGNED_PERMITTED;
+	nControl |= ARM_CONTROL_STRICT_ALIGNMENT;
+#else
+	nControl &= ~ARM_CONTROL_STRICT_ALIGNMENT;
+	nControl |= ARM_CONTROL_UNALIGNED_PERMITTED;
+#endif
+#endif
+	nControl |= MMU_MODE;
+	asm volatile ("mcr p15, 0, %0, c1, c0,  0" : : "r" (nControl) : "memory");
+}
+
+// circle/alloc.h
+extern "C" void mem_init (unsigned long ulBase, unsigned long ulSize);
+
 void Initialize (void)
 {
+	mem_init(0, 256 * 1024 * 1024);
+	EnableMMU ();
+
 	boolean bOK = TRUE;
 
 	if (bOK)

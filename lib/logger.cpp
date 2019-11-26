@@ -54,7 +54,7 @@ CLogger::CLogger (unsigned nLogLevel, CTimer *pTimer)
 	m_pEventNotificationHandler (0),
 	m_pPanicHandler (0)
 {
-	m_pBuffer = new char[LOGGER_BUFSIZE];
+	m_pBuffer = 0;//new char[LOGGER_BUFSIZE];
 
 	s_pThis = this;
 }
@@ -73,7 +73,7 @@ CLogger::~CLogger (void)
 		}
 	}
 
-	delete [] m_pBuffer;
+	//delete [] m_pBuffer;
 	m_pBuffer = 0;
 
 	m_pTarget = 0;
@@ -218,9 +218,10 @@ CLogger *CLogger::Get (void)
 
 void CLogger::Write (const char *pString)
 {
+/*
 	unsigned long nLength = strlen (pString);
 
-	//m_pTarget->Write (pString, nLength);
+	m_pTarget->Write (pString, nLength);
 
 	m_SpinLock.Acquire ();
 
@@ -245,10 +246,12 @@ void CLogger::Write (const char *pString)
 	}
 
 	m_SpinLock.Release ();
+*/
 }
 
 int CLogger::Read (void *pBuffer, unsigned nCount)
 {
+/*
 	m_SpinLock.Acquire ();
 
 	if (m_nInPtr == m_nOutPtr)
@@ -278,11 +281,12 @@ int CLogger::Read (void *pBuffer, unsigned nCount)
 	m_SpinLock.Release ();
 
 	return nResult;
+*/
 }
 
 void CLogger::WriteEvent (const char *pSource, TLogSeverity Severity, const char *pMessage)
 {
-	TLogEvent *pEvent = new TLogEvent;
+	TLogEvent *pEvent = 0;//new TLogEvent;
 	if (pEvent == 0)
 	{
 		return;
