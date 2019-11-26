@@ -52,6 +52,51 @@ void RegisterPeriodicHandler (TPeriodicTimerHandler *pHandler)
 	periodic = pHandler;
 }
 
+// Interrupts
+
+#define MAX_HANDLERS    128
+
+static irq_handler handlers[MAX_HANDLERS] = { NULL };
+static void *args[MAX_HANDLERS] = { NULL };
+
+void set_irq_handler(uint8_t source, irq_handler f, void *arg)
+{
+	if (source < 0 || source >= MAX_HANDLERS) return;
+	handlers[source] = f;
+	args[source] = arg;
+	DMB(); DSB();
+	if (f) *INT_IRQENAB1 = (1 << source);
+	else *INT_IRQDISA1 = (1 << source);
+	DMB(); DSB();
+}
+
+void /*__attribute__((interrupt("IRQ")))*/ _int_irq()
+{
+	DMB(); DSB();
+	uint32_t lr;
+	__asm__ __volatile__ ("mov %0, r0" : "=r" (lr));
+
+	DMB(); DSB();
+	// Check interrupt source
+	uint32_t pend_base = *INT_IRQBASPEND;
+	uint8_t source;
+	if (pend_base & (1 << 8)) {
+		source = 0 + __builtin_ctz(*INT_IRQPEND1);
+	} else if (pend_base & (1 << 9)) {
+		source = 32 + __builtin_ctz(*INT_IRQPEND2);
+	} else if (pend_base & 0xff) {
+		source = 64 + __builtin_ctz(pend_base & 0xff);
+	} else {
+		//LogWrite("int", LOG_NOTICE, "??? %x %x %x", *INT_IRQPEND1, *INT_IRQPEND2, *INT_IRQBASPEND);
+		DMB(); DSB();
+		return;
+	}
+	if (source >= 4) LogWrite("int", LOG_NOTICE, "interrupt %d", (int)source);
+
+	if (handlers[source]) (*handlers[source])(args[source]);
+	DMB(); DSB();
+}
+
 void ConnectInterrupt (unsigned nIRQ, TInterruptHandler *pHandler, void *pParam)
 {
 	CInterruptSystem::Get ()->ConnectIRQ (nIRQ, pHandler, pParam);

@@ -44,6 +44,7 @@ extern "C" {
 #define INT_BASE    0x2000b000
 #define INT_IRQBASPEND  (volatile uint32_t *)(INT_BASE + 0x200)
 #define INT_IRQPEND1    (volatile uint32_t *)(INT_BASE + 0x204)
+#define INT_IRQPEND2    (volatile uint32_t *)(INT_BASE + 0x208)
 #define INT_IRQENAB1    (volatile uint32_t *)(INT_BASE + 0x210)
 #define INT_IRQDISA1    (volatile uint32_t *)(INT_BASE + 0x21c)
 #define INT_IRQBASENAB  (volatile uint32_t *)(INT_BASE + 0x218)
@@ -64,6 +65,7 @@ typedef void (*irq_handler)(void *);
 // Pass in NULL to cancel
 // Handlers do not need barriers at the beginning or the end
 void set_irq_handler(uint8_t source, irq_handler f, void *arg);
+void _int_irq();
 
 // Single tag at a time
 
