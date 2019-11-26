@@ -4,7 +4,6 @@
 #include <vc4/vchiq/vchiqdevice.h>
 #include <circle/bcm2835.h>
 #include <circle/bcm2835int.h>
-#include <circle/sysconfig.h>
 
 #include <linux/linuxemu.h>
 #include <circle/util.h>

@@ -20,12 +20,7 @@
 #include <circle/startup.h>
 
 #include <circle/memory.h>
-#include <circle/actled.h>
-#include <circle/koptions.h>
-#include <circle/devicenameservice.h>
 #include <circle/screen.h>
-#include <circle/serial.h>
-#include <circle/exceptionhandler.h>
 #include <circle/interrupt.h>
 #include <circle/timer.h>
 #include <circle/logger.h>

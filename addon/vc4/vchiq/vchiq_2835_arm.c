@@ -56,6 +56,7 @@
 extern void dmac_map_area(const void *, size_t, int);
 extern void dmac_unmap_area(const void *, size_t, int);
 #else
+// TODO: Separate this from libcircle
 void CleanAndInvalidateDataCacheRange (uintptr_t nAddress, size_t nLength);
 #endif
 

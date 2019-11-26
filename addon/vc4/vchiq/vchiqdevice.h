@@ -5,7 +5,6 @@
 #define _vc4_vchiq_vchiqdevice_h
 
 #include <linux/platform_device.h>
-//#include <circle/types.h>
 
 #ifdef __cplusplus
 extern "C" {
