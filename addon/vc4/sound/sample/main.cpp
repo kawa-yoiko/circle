@@ -30,6 +30,7 @@
 #include <circle/types.h>
 
 #include <math.h>
+#include "coroutine.h"
 
 #ifndef M_PI
 #define M_PI 3.1415926535897932384626433832795
@@ -55,10 +56,6 @@ int main (void)
 	Run ();
 	while (1) { }
 }
-
-#include "sound.h"
-
-#define SOUND_SAMPLES		(sizeof Sound / sizeof Sound[0] / SOUND_CHANNELS)
 
 static const char FromKernel[] = "kernel";
 
@@ -107,12 +104,8 @@ void Initialize (void)
 	}
 }
 
-void Run (void)
+void PlaybackThread (void *_unused)
 {
-	m_Logger.Write (FromKernel, LogNotice, "Compile time: " __DATE__ " " __TIME__);
-
-	m_VCHIQSound.chunk_cb = synth;
-
 	while (1)
 	{
 		CVCHIQSoundBaseDevice_Start(&m_VCHIQSound);
@@ -129,5 +122,35 @@ void Run (void)
 		m_Logger.Write (FromKernel, LogNotice, "Playback completed");
 
 		m_Scheduler.Sleep (2);
+	}
+}
+
+__attribute__((noinline)) void iterate(int count)
+{
+	for (int i = 0, s = 0; i < count; i++) {
+		s += i;
+		m_Logger.Write(FromKernel, LogNotice, "> %d", s);
+		co_yield();
+	}
+}
+
+void fn(void *_unused)
+{
+	for (int i = 1; ; i++) {
+		m_Logger.Write(FromKernel, LogNotice, "== %d ==", i);
+		iterate(i);
+	}
+}
+
+void Run (void)
+{
+	m_Logger.Write (FromKernel, LogNotice, "Compile time: " __DATE__ " " __TIME__);
+
+	m_VCHIQSound.chunk_cb = synth;
+
+	int id = co_create(fn, 0);
+	while (1) {
+		for (int i = 1; i <= 16; i++) co_next(i);
+		m_Scheduler.Sleep(1);
 	}
 }
