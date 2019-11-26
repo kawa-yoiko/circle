@@ -1,11 +1,5 @@
 #include <linux/env.h>
-#include <circle/timer.h>
-#include <circle/interrupt.h>
-#include <circle/bcmpropertytags.h>
-#include <circle/util.h>
-#include <circle/types.h>
 #include <circle/logger.h>
-#include <circle/stdarg.h>
 
 #include "coroutine.h"
 #include "common.h"
@@ -130,24 +124,15 @@ void env_init()
 }
 
 
-struct TPropertyTagVCHIQInit
-{
-	TPropertyTag	Tag;
-	u32		Data;
-};
-
 uint32_t EnableVCHIQ (uint32_t buf)
 {
-	TPropertyTagVCHIQInit tag;
-	tag.Data = buf;
-
-	CBcmPropertyTags Tags;
-	if (!Tags.GetTag (0x48010, &tag, sizeof (TPropertyTagVCHIQInit)))
-	{
-		return 0;   // XXX: Maybe ENXIO
-	}
-
-	return tag.Data;
+	typedef mbox_buf(4) proptag;
+	proptag *mboxbuf = (proptag *)(MEM_COHERENT_REGION + 4 * PAGE_SIZE);
+	mbox_init(*mboxbuf);
+	mboxbuf->tag.id = 0x48010;
+	mboxbuf->tag.u32[0] = buf;
+	mbox_emit(*mboxbuf);
+	return mboxbuf->tag.u32[0];
 }
 
 void LogWrite (const char *pSource,
@@ -159,7 +144,7 @@ void LogWrite (const char *pSource,
 
 	CLogger::Get ()->WriteV (pSource, (TLogSeverity) Severity, pMessage, var);
 
-va_end (var);
+	va_end (var);
 }
 
 #define COHERENT_SLOT_VCHIQ_START       (MEGABYTE / PAGE_SIZE / 2)

@@ -24,7 +24,6 @@
 #include <circle/logger.h>
 #include <vc4/vchiq/vchiqdevice.h>
 #include <vc4/sound/vchiqsoundbasedevice.h>
-#include <circle/types.h>
 
 #include <math.h>
 #include <linux/env.h>
