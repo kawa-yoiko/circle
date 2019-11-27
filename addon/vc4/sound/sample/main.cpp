@@ -88,61 +88,28 @@ static CPageTable *m_pPageTable = &m_pageTable;
 
 #define TTBCR_SPLIT	0
 
-void EnableMMU (void)
+extern "C" void EnableMMU (void *base_address);
+/*
+void EnableMMU (void *base_address)
 {
-#if RASPPI <= 3
 	u32 nAuxControl;
 	asm volatile ("mrc p15, 0, %0, c1, c0,  1" : "=r" (nAuxControl));
-#if RASPPI == 1
 	nAuxControl |= ARM_AUX_CONTROL_CACHE_SIZE;	// restrict cache size (no page coloring)
-#else
-	nAuxControl |= ARM_AUX_CONTROL_SMP;
-#endif
 	asm volatile ("mcr p15, 0, %0, c1, c0,  1" : : "r" (nAuxControl));
 
 	u32 nTLBType;
 	asm volatile ("mrc p15, 0, %0, c0, c0,  3" : "=r" (nTLBType));
-	assert (!(nTLBType & ARM_TLB_TYPE_SEPARATE_TLBS));
 
 	// set TTB control
 	asm volatile ("mcr p15, 0, %0, c2, c0,  2" : : "r" (TTBCR_SPLIT));
 
 	// set TTBR0
-	assert (m_pPageTable != 0);
-	asm volatile ("mcr p15, 0, %0, c2, c0,  0" : : "r" (m_pPageTable->GetBaseAddress ()));
-#else	// RASPPI <= 3
-	// set MAIR0
-	u32 nMAIR0 =   LPAE_MAIR_NORMAL   << ATTRINDX_NORMAL*8
-                     | LPAE_MAIR_DEVICE   << ATTRINDX_DEVICE*8
-	             | LPAE_MAIR_COHERENT << ATTRINDX_COHERENT*8;
-	asm volatile ("mcr p15, 0, %0, c10, c2, 0" : : "r" (nMAIR0));
-
-	// set TTBCR
-	asm volatile ("mcr p15, 0, %0, c2, c0,  2" : : "r" (
-		        LPAE_TTBCR_EAE
-		      | LPAE_TTBCR_EPD1
-		      | ATTRIB_SH_INNER_SHAREABLE << LPAE_TTBCR_SH0__SHIFT
-		      | LPAE_TTBCR_ORGN0_WR_BACK_ALLOCATE << LPAE_TTBCR_ORGN0__SHIFT
-		      | LPAE_TTBCR_IRGN0_WR_BACK_ALLOCATE << LPAE_TTBCR_IRGN0__SHIFT
-		      | LPAE_TTBCR_T0SZ_4GB));
-
-	// set TTBR0
-	assert (m_pPageTable != 0);
-	u64 nBaseAddress = m_pPageTable->GetBaseAddress ();
-	asm volatile ("mcrr p15, 0, %0, %1, c2" : : "r" ((u32) nBaseAddress),
-						    "r" ((u32) (nBaseAddress >> 32)));
-#endif	// RASPPI <= 3
+	asm volatile ("mcr p15, 0, %0, c2, c0,  0" : : "r" (base_address));
 
 	// set Domain Access Control register (Domain 0 to client)
 	asm volatile ("mcr p15, 0, %0, c3, c0,  0" : : "r" (DOMAIN_CLIENT << 0));
 
-#ifndef ARM_ALLOW_MULTI_CORE
 	InvalidateDataCache ();
-#else
-	InvalidateDataCacheL1Only ();
-#endif
-
-	// required if MMU was previously enabled and not properly reset
 	InvalidateInstructionCache ();
 	FlushBranchTargetCache ();
 	asm volatile ("mcr p15, 0, %0, c8, c7,  0" : : "r" (0));	// invalidate unified TLB
@@ -164,10 +131,11 @@ void EnableMMU (void)
 	nControl |= MMU_MODE;
 	asm volatile ("mcr p15, 0, %0, c1, c0,  0" : : "r" (nControl) : "memory");
 }
+*/
 
 void Initialize (void)
 {
-	EnableMMU ();
+	EnableMMU ((void *)MEM_PAGE_TABLE1);
 
 	boolean bOK = TRUE;
 
