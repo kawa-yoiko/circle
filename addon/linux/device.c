@@ -1,7 +1,7 @@
 #include <linux/device.h>
 #include <stdarg.h>
 
-static const char FromDevice[] = "device";
+//static const char FromDevice[] = "device";
 
 void __iomem *devm_ioremap_resource (struct device *dev, struct resource *res)
 {

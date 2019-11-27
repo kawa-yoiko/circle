@@ -1,6 +1,6 @@
 #include <linux/env.h>
 #include <linux/synchronize.h>
-#include <circle/logger.h>
+#include <stdarg.h>
 
 #include "coroutine.h"
 #include "common.h"
@@ -124,11 +124,25 @@ void env_init()
 	ConnectInterrupt(1, timer1_handler, NULL);
 }
 
+#define MEGABYTE  1048576
+#define PAGE_SIZE 4096
+
+#define COHERENT_SLOT_VCHIQ_START       (MEGABYTE / PAGE_SIZE / 2)
+#define COHERENT_SLOT_VCHIQ_END         (MEGABYTE / PAGE_SIZE - 1)
+
+// TODO: Make this work with 64-bit
+u32 CMemorySystem_GetCoherentPage (unsigned nSlot)
+{
+	u32 nPageAddress = 0x1c00000;
+	nPageAddress += nSlot * PAGE_SIZE;
+	return nPageAddress;
+}
+
 
 uint32_t EnableVCHIQ (uint32_t buf)
 {
 	typedef mbox_buf(4) proptag;
-	proptag *mboxbuf = (proptag *)(0x1c00000 + 4 * PAGE_SIZE);
+	proptag *mboxbuf = (proptag *)CMemorySystem_GetCoherentPage(4);
 	mbox_init(*mboxbuf);
 	mboxbuf->tag.id = 0x48010;
 	mboxbuf->tag.u32[0] = buf;
@@ -146,17 +160,6 @@ void LogWrite (const char *pSource,
 	//CLogger::Get ()->WriteV (pSource, (TLogSeverity) Severity, pMessage, var);
 
 	va_end (var);
-}
-
-#define COHERENT_SLOT_VCHIQ_START       (MEGABYTE / PAGE_SIZE / 2)
-#define COHERENT_SLOT_VCHIQ_END         (MEGABYTE / PAGE_SIZE - 1)
-
-// TODO: Make this work with 64-bit
-u32 CMemorySystem_GetCoherentPage (unsigned nSlot)
-{
-	u32 nPageAddress = 0x1c00000;
-	nPageAddress += nSlot * PAGE_SIZE;
-	return nPageAddress;
 }
 
 void *GetCoherentRegion512K ()
