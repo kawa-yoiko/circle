@@ -157,7 +157,7 @@ void CLogger::WriteV (const char *pSource, TLogSeverity Severity, const char *pM
 
 #ifndef USE_RPI_STUB_AT
 #ifndef ARM_ALLOW_MULTI_CORE
-		halt ();
+		//halt ();
 #else
 		CMultiCoreSupport::HaltAll ();
 #endif
@@ -201,7 +201,7 @@ void CLogger::WriteNoAlloc (const char *pSource, TLogSeverity Severity, const ch
 	{
 #ifndef USE_RPI_STUB_AT
 #ifndef ARM_ALLOW_MULTI_CORE
-		halt ();
+		//halt ();
 #else
 		CMultiCoreSupport::HaltAll ();
 #endif
