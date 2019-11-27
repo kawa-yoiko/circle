@@ -1,3 +1,4 @@
+#if 0
 /*
  * startup.S
  *
@@ -110,3 +111,4 @@ _start_secondary:
 #endif
 
 /* End */
+#endif
