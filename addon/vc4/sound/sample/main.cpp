@@ -29,9 +29,6 @@
 #include "coroutine.h"
 #include "common.h"
 
-#include <circle/pagetable.h>
-#include <circle/armv6mmu.h>
-
 #ifndef M_PI
 #define M_PI 3.1415926535897932384626433832795
 #endif
@@ -69,9 +66,6 @@ unsigned synth(int16_t *buf, unsigned chunk_size)
 	count += (chunk_size >> 1);
 	return chunk_size;
 }
-
-static CPageTable m_pageTable(256 * 1024 * 1024);
-static CPageTable *m_pPageTable = &m_pageTable;
 
 #if RASPPI == 1
 #define MMU_MODE	(  ARM_CONTROL_MMU			\
@@ -133,8 +127,55 @@ void EnableMMU (void *base_address)
 }
 */
 
+#include <circle/armv6mmu.h>
+#include <circle/sysconfig.h>
+#include <circle/bcm2835.h>
+#include <circle/bcm2836.h>
+#include <circle/bcm2711.h>
+#include <circle/synchronize.h>
+#include <circle/alloc.h>
+#include <circle/util.h>
+
+void InitializePageTable (void)
+{
+	uint32_t *m_pTable = (uint32_t *)MEM_PAGE_TABLE1;
+
+	for (unsigned nEntry = 0; nEntry < 4096; nEntry++)
+	{
+		u32 nBaseAddress = MEGABYTE * nEntry;
+
+		u32 nAttributes = ARMV6MMU_FAULT;
+
+		extern u8 _etext;
+		if (nBaseAddress < (u32) &_etext)
+		{
+			nAttributes = ARMV6MMUL1SECTION_NORMAL;
+		}
+		else if (nBaseAddress == 0x1c00000)
+//#define STR1(_x) #_x
+//#define STR(_x) STR1(_x)
+//#pragma message "MEM_COHERENT_REGION is " STR(MEM_COHERENT_REGION)
+		{
+			nAttributes = ARMV6MMUL1SECTION_COHERENT;
+		}
+		else if (nBaseAddress < 256 * 1024 * 1024)
+		{
+			nAttributes = ARMV6MMUL1SECTION_NORMAL_XN;
+		}
+		else if (nBaseAddress < ARM_IO_BASE + 0xFFFFFF)
+		{
+			nAttributes = ARMV6MMUL1SECTION_DEVICE;
+		}
+
+		m_pTable[nEntry] = nBaseAddress | nAttributes;
+	}
+
+	CleanDataCache ();
+}
+
 void Initialize (void)
 {
+	InitializePageTable ();
 	EnableMMU ((void *)MEM_PAGE_TABLE1);
 
 	boolean bOK = TRUE;

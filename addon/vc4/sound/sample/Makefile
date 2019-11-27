@@ -4,7 +4,7 @@
 
 CIRCLEHOME = ../../../..
 
-OBJS	= main.o env.o coroutine.o common.o stub.o pagetable.o util.o
+OBJS	= main.o env.o coroutine.o common.o stub.o util.o
 
 LIBS	= $(CIRCLEHOME)/addon/vc4/sound/libvchiqsound.a \
 	  $(CIRCLEHOME)/addon/vc4/vchiq/libvchiq.a \
