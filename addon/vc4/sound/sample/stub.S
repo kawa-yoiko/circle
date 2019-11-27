@@ -1,3 +1,20 @@
+#include <circle/sysconfig.h>
+
+.section .init
+.global _start
+_start:
+    cps     #0x11                /* set fiq mode */
+    ldr     sp, =MEM_FIQ_STACK
+    cps     #0x12                /* set irq mode */
+    ldr     sp, =MEM_IRQ_STACK
+    cps     #0x17                /* set abort mode */
+    ldr     sp, =MEM_ABORT_STACK
+    cps     #0x1B                /* set "undefined" mode */
+    ldr     sp, =MEM_ABORT_STACK
+    cps     #0x1F                /* set system mode */
+    ldr     sp, =MEM_KERNEL_STACK
+    b	    sysinit
+
 .global qwq_irq_stub
 qwq_irq_stub:
     sub		lr, lr, #4            /* lr: return address */

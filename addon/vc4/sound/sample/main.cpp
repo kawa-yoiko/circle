@@ -17,9 +17,10 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
-#include <circle/startup.h>
+#include <circle/armv6mmu.h>
+#include <circle/bcm2835.h>
+#include <circle/synchronize.h>
 
-#include <circle/logger.h>
 #include <vc4/vchiq/vchiqdevice.h>
 #include <vc4/sound/vchiqsoundbasedevice.h>
 
@@ -82,59 +83,8 @@ unsigned synth(int16_t *buf, unsigned chunk_size)
 
 #define TTBCR_SPLIT	0
 
+// stub.S
 extern "C" void EnableMMU (void *base_address);
-/*
-void EnableMMU (void *base_address)
-{
-	u32 nAuxControl;
-	asm volatile ("mrc p15, 0, %0, c1, c0,  1" : "=r" (nAuxControl));
-	nAuxControl |= ARM_AUX_CONTROL_CACHE_SIZE;	// restrict cache size (no page coloring)
-	asm volatile ("mcr p15, 0, %0, c1, c0,  1" : : "r" (nAuxControl));
-
-	u32 nTLBType;
-	asm volatile ("mrc p15, 0, %0, c0, c0,  3" : "=r" (nTLBType));
-
-	// set TTB control
-	asm volatile ("mcr p15, 0, %0, c2, c0,  2" : : "r" (TTBCR_SPLIT));
-
-	// set TTBR0
-	asm volatile ("mcr p15, 0, %0, c2, c0,  0" : : "r" (base_address));
-
-	// set Domain Access Control register (Domain 0 to client)
-	asm volatile ("mcr p15, 0, %0, c3, c0,  0" : : "r" (DOMAIN_CLIENT << 0));
-
-	InvalidateDataCache ();
-	InvalidateInstructionCache ();
-	FlushBranchTargetCache ();
-	asm volatile ("mcr p15, 0, %0, c8, c7,  0" : : "r" (0));	// invalidate unified TLB
-	DataSyncBarrier ();
-	FlushPrefetchBuffer ();
-
-	// enable MMU
-	u32 nControl;
-	asm volatile ("mrc p15, 0, %0, c1, c0,  0" : "=r" (nControl));
-#if RASPPI == 1
-#ifdef ARM_STRICT_ALIGNMENT
-	nControl &= ~ARM_CONTROL_UNALIGNED_PERMITTED;
-	nControl |= ARM_CONTROL_STRICT_ALIGNMENT;
-#else
-	nControl &= ~ARM_CONTROL_STRICT_ALIGNMENT;
-	nControl |= ARM_CONTROL_UNALIGNED_PERMITTED;
-#endif
-#endif
-	nControl |= MMU_MODE;
-	asm volatile ("mcr p15, 0, %0, c1, c0,  0" : : "r" (nControl) : "memory");
-}
-*/
-
-#include <circle/armv6mmu.h>
-#include <circle/sysconfig.h>
-#include <circle/bcm2835.h>
-#include <circle/bcm2836.h>
-#include <circle/bcm2711.h>
-#include <circle/synchronize.h>
-#include <circle/alloc.h>
-#include <circle/util.h>
 
 void InitializePageTable (void)
 {
