@@ -20,7 +20,7 @@
 #ifndef _circle_util_h
 #define _circle_util_h
 
-#include <circle/types.h>
+#include "types.h"
 
 #ifdef __cplusplus
 extern "C" {

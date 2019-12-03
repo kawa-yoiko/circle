@@ -1,4 +1,4 @@
-#include <circle/synchronize.h>
+#include "circle/synchronize.h"
 
 static void vfpinit (void)
 {

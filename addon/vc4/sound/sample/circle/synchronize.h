@@ -20,11 +20,7 @@
 #ifndef _circle_synchronize_h
 #define _circle_synchronize_h
 
-#if AARCH == 64
-	#include <circle/synchronize64.h>
-#else
-
-#include <circle/types.h>
+#include "types.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -134,8 +130,6 @@ void SyncDataAndInstructionCache (void);
 
 #ifdef __cplusplus
 }
-#endif
-
 #endif
 
 #endif
