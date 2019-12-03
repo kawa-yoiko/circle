@@ -1,14 +1,5 @@
 #include <circle/synchronize.h>
 
-void *__dso_handle WEAK;
-
-void __aeabi_atexit (void *pThis, void (*pFunc)(void *pThis), void *pHandle) WEAK;
-
-void __aeabi_atexit (void *pThis, void (*pFunc)(void *pThis), void *pHandle)
-{
-	// TODO
-}
-
 static void vfpinit (void)
 {
 	// Coprocessor Access Control Register
@@ -38,18 +29,6 @@ void sysinit (void)
 	for (unsigned char *pBSS = &__bss_start; pBSS < &_end; pBSS++)
 	{
 		*pBSS = 0;
-	}
-
-#if STDLIB_SUPPORT >= 2
-	CMemorySystem Memory;
-#endif
-
-	// call constructors of static objects
-	extern void (*__init_start) (void);
-	extern void (*__init_end) (void);
-	for (void (**pFunc) (void) = &__init_start; pFunc < &__init_end; pFunc++)
-	{
-		(**pFunc) ();
 	}
 
 	extern int main (void);

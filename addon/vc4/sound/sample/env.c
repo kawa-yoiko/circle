@@ -130,10 +130,9 @@ void env_init()
 #define COHERENT_SLOT_VCHIQ_START       (MEGABYTE / PAGE_SIZE / 2)
 #define COHERENT_SLOT_VCHIQ_END         (MEGABYTE / PAGE_SIZE - 1)
 
-// TODO: Make this work with 64-bit
-u32 CMemorySystem_GetCoherentPage (unsigned nSlot)
+uintptr CMemorySystem_GetCoherentPage (unsigned nSlot)
 {
-	u32 nPageAddress = 0x1c00000;
+	uintptr nPageAddress = 0x1c00000;
 	nPageAddress += nSlot * PAGE_SIZE;
 	return nPageAddress;
 }

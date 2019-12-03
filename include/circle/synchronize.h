@@ -24,7 +24,6 @@
 	#include <circle/synchronize64.h>
 #else
 
-#include <circle/macros.h>
 #include <circle/types.h>
 
 #ifdef __cplusplus
@@ -75,7 +74,7 @@ void LeaveCritical (void);
 #define CleanDataCache()	asm volatile ("mcr p15, 0, %0, c7, c10, 0\n" \
 					      "mcr p15, 0, %0, c7, c10, 4\n" : : "r" (0) : "memory")
 
-void CleanAndInvalidateDataCacheRange (u32 nAddress, u32 nLength) MAXOPT;
+void CleanAndInvalidateDataCacheRange (u32 nAddress, u32 nLength) __attribute__ ((optimize (3)));
 
 void SyncDataAndInstructionCache (void);
 

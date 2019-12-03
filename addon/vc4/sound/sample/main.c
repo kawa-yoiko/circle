@@ -17,8 +17,6 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
-#include <circle/armv6mmu.h>
-#include <circle/bcm2835.h>
 #include <circle/synchronize.h>
 
 #include <vc4/vchiq/vchiqdevice.h>
@@ -82,6 +80,7 @@ unsigned synth(int16_t *buf, unsigned chunk_size)
 #endif
 
 #define TTBCR_SPLIT	0
+#define MEM_PAGE_TABLE1 0x128000    // Must be 16K aligned
 
 // stub.S
 void EnableMMU (void *base_address);
@@ -92,29 +91,31 @@ void InitializePageTable (void)
 
 	for (unsigned nEntry = 0; nEntry < 4096; nEntry++)
 	{
-		u32 nBaseAddress = MEGABYTE * nEntry;
+		u32 nBaseAddress = nEntry << 20;
 
-		u32 nAttributes = ARMV6MMU_FAULT;
+		// Fault
+		u32 nAttributes = 0;
 
 		extern u8 _etext;
 		if (nBaseAddress < (u32) &_etext)
 		{
-			nAttributes = ARMV6MMUL1SECTION_NORMAL;
+			// Normal
+			nAttributes = 0x0040E;
 		}
 		else if (nBaseAddress == 0x1c00000)
-//#define STR1(_x) #_x
-//#define STR(_x) STR1(_x)
-//#pragma message "MEM_COHERENT_REGION is " STR(MEM_COHERENT_REGION)
 		{
-			nAttributes = ARMV6MMUL1SECTION_COHERENT;
+			// Strongly ordered
+			nAttributes = 0x10412;
 		}
 		else if (nBaseAddress < 256 * 1024 * 1024)
 		{
-			nAttributes = ARMV6MMUL1SECTION_NORMAL_XN;
+			// Normal, no execution
+			nAttributes = 0x0041E;
 		}
-		else if (nBaseAddress < ARM_IO_BASE + 0xFFFFFF)
+		else if (nBaseAddress < 0x20FFFFFF)
 		{
-			nAttributes = ARMV6MMUL1SECTION_DEVICE;
+			// Shared device
+			nAttributes = 0x10416;
 		}
 
 		m_pTable[nEntry] = nBaseAddress | nAttributes;
