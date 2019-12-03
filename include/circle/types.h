@@ -20,6 +20,7 @@
 #ifndef _circle_types_h
 #define _circle_types_h
 
+/*
 #include <assert.h>
 
 typedef unsigned char		u8;
@@ -60,5 +61,8 @@ typedef char		boolean;
 #define TRUE		1
 #endif
 ASSERT_STATIC (sizeof (boolean) == 1);
+*/
+
+#include <linux/types.h>
 
 #endif

@@ -39,7 +39,7 @@ CVCHIQSoundBaseDevice   m_VCHIQSound;
 
 static void Initialize ();
 static void Run ();
-extern "C" void qwq_irq_stub ();
+void qwq_irq_stub ();
 
 int main (void)
 {
@@ -84,7 +84,7 @@ unsigned synth(int16_t *buf, unsigned chunk_size)
 #define TTBCR_SPLIT	0
 
 // stub.S
-extern "C" void EnableMMU (void *base_address);
+void EnableMMU (void *base_address);
 
 void InitializePageTable (void)
 {
