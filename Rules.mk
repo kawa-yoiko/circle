@@ -38,7 +38,6 @@ FLOAT_ABI ?= hard
 GC_SECTIONS ?= 0
 
 CC	= $(PREFIX)gcc
-CPP	= $(PREFIX)g++
 AS	= $(CC)
 LD	= $(PREFIX)ld
 AR	= $(PREFIX)ar
@@ -83,21 +82,6 @@ $(error STDLIB_SUPPORT > 0 requires GNU make 4.0 or newer)
 endif
 endif
 
-ifeq ($(strip $(STDLIB_SUPPORT)),3)
-LIBSTDCPP != $(CPP) $(ARCH) -print-file-name=libstdc++.a
-EXTRALIBS += $(LIBSTDCPP)
-LIBGCC_EH != $(CPP) $(ARCH) -print-file-name=libgcc_eh.a
-ifneq ($(strip $(LIBGCC_EH)),libgcc_eh.a)
-EXTRALIBS += $(LIBGCC_EH)
-endif
-ifeq ($(strip $(AARCH)),64)
-CRTBEGIN != $(CPP) $(ARCH) -print-file-name=crtbegin.o
-CRTEND   != $(CPP) $(ARCH) -print-file-name=crtend.o
-endif
-else
-CPPFLAGS  += -fno-exceptions -fno-rtti -nostdinc++
-endif
-
 ifeq ($(strip $(STDLIB_SUPPORT)),0)
 CFLAGS	  += -nostdinc
 else
@@ -126,7 +110,6 @@ DEFINE	+= -D__circle__ -DRASPPI=$(RASPPI) -DSTDLIB_SUPPORT=$(STDLIB_SUPPORT) \
 
 AFLAGS	+= $(ARCH) $(DEFINE) $(INCLUDE) $(OPTIMIZE)
 CFLAGS	+= $(ARCH) -Wall -fsigned-char -ffreestanding $(DEFINE) $(INCLUDE) $(OPTIMIZE) -g
-CPPFLAGS+= $(CFLAGS) -std=c++14
 LDFLAGS	+= --section-start=.init=$(LOADADDR)
 
 %.o: %.S
@@ -136,10 +119,6 @@ LDFLAGS	+= --section-start=.init=$(LOADADDR)
 %.o: %.c
 	@echo "  CC    $@"
 	@$(CC) $(CFLAGS) -std=gnu99 -c -o $@ $<
-
-%.o: %.cpp
-	@echo "  CPP   $@"
-	@$(CPP) $(CPPFLAGS) -c -o $@ $<
 
 $(TARGET).img: $(OBJS) $(LIBS) $(CIRCLEHOME)/circle.ld
 	@echo "  LD    $(TARGET).elf"
@@ -153,31 +132,3 @@ $(TARGET).img: $(OBJS) $(LIBS) $(CIRCLEHOME)/circle.ld
 
 clean:
 	rm -f *.o *.a *.elf *.lst *.img *.hex *.cir *.map *~ $(EXTRACLEAN)
-
-ifneq ($(strip $(SDCARD)),)
-install: $(TARGET).img
-	cp $(TARGET).img $(SDCARD)
-	sync
-endif
-
-#
-# Eclipse support
-#
-
-SERIALPORT  ?= /dev/ttyUSB0
-USERBAUD ?= 115200
-FLASHBAUD ?= 115200
-REBOOTMAGIC ?=
-
-$(TARGET).hex: $(TARGET).img
-	@echo "  COPY  $(TARGET).hex"
-	@$(PREFIX)objcopy $(TARGET).elf -O ihex $(TARGET).hex
-
-flash: $(TARGET).hex
-ifneq ($(strip $(REBOOTMAGIC)),)
-	python $(CIRCLEHOME)/tools/reboottool.py $(REBOOTMAGIC) $(SERIALPORT) $(USERBAUD)
-endif
-	python $(CIRCLEHOME)/tools/flasher.py $(TARGET).hex $(SERIALPORT) $(FLASHBAUD)
-
-monitor:
-	putty -serial $(SERIALPORT) -sercfg $(USERBAUD)
