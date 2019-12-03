@@ -40,7 +40,7 @@ static inline void CVCHIQDevice_AddResource (
 }
 
 static inline void CVCHIQDevice_SetDMAMemory (
-    CVCHIQDevice *_this, u32 nStart, u32 nEnd)
+    CVCHIQDevice *_this, uintptr nStart, uintptr nEnd)
 {
     assert (nStart <= nEnd);
 
@@ -59,9 +59,8 @@ boolean CVCHIQDevice_Initialize (CVCHIQDevice *_this)
     CVCHIQDevice_AddResource (_this, ARM_VCHIQ_BASE, ARM_VCHIQ_END, IORESOURCE_MEM);
     CVCHIQDevice_AddResource (_this, ARM_IRQ_ARM_DOORBELL_0, ARM_IRQ_ARM_DOORBELL_0, IORESOURCE_IRQ);
 
-    void *start = GetCoherentRegion512K ();
-    // TODO: Make this work with 64-bit
-    CVCHIQDevice_SetDMAMemory (_this, (u32) start, (u32) start + 524287);
+    uintptr start = (uintptr) GetCoherentRegion512K ();
+    CVCHIQDevice_SetDMAMemory (_this, start, start + 524287);
 
     // CVCHIQDevice::Initialize()
     if (linuxemu_init () != 0)
