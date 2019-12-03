@@ -18,24 +18,13 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-CIRCLEHOME ?= ..
-
--include $(CIRCLEHOME)/Config.mk
--include $(CIRCLEHOME)/Config2.mk	# is not overwritten by "configure"
-
 AARCH	 ?= 32
 RASPPI	 ?= 1
 PREFIX	 ?= arm-none-eabi-
 PREFIX64 ?= aarch64-elf-
 
-# see: doc/stdlib-support.txt
-STDLIB_SUPPORT ?= 1
-
 # set this to "softfp" if you want to link specific libraries
 FLOAT_ABI ?= hard
-
-# set this to 1 to enable garbage collection on sections, may cause side effects
-GC_SECTIONS ?= 0
 
 CC	= $(PREFIX)gcc
 AS	= $(CC)
@@ -75,36 +64,20 @@ else
 $(error AARCH must be set to 32 or 64)
 endif
 
-ifneq ($(strip $(STDLIB_SUPPORT)),0)
 MAKE_VERSION_MAJOR := $(firstword $(subst ., ,$(MAKE_VERSION)))
 ifneq ($(filter 0 1 2 3,$(MAKE_VERSION_MAJOR)),)
-$(error STDLIB_SUPPORT > 0 requires GNU make 4.0 or newer)
-endif
-endif
-
-ifeq ($(strip $(STDLIB_SUPPORT)),0)
-CFLAGS	  += -nostdinc
-else
-LIBGCC	  != $(CPP) $(ARCH) -print-file-name=libgcc.a
-EXTRALIBS += $(LIBGCC)
+$(error Requires GNU make 4.0 or newer)
 endif
 
-ifeq ($(strip $(STDLIB_SUPPORT)),1)
 LIBM	  != $(CPP) $(ARCH) -print-file-name=libm.a
 ifneq ($(strip $(LIBM)),libm.a)
 EXTRALIBS += $(LIBM)
-endif
-endif
-
-ifeq ($(strip $(GC_SECTIONS)),1)
-CFLAGS	+= -ffunction-sections -fdata-sections
-LDFLAGS	+= --gc-sections
 endif
 
 OPTIMIZE ?= -O2
 
 INCLUDE	+= -I $(CIRCLEHOME)/addon -I $(CIRCLEHOME)/addon/vc4
-DEFINE	+= -D__circle__ -DRASPPI=$(RASPPI) -DSTDLIB_SUPPORT=$(STDLIB_SUPPORT) \
+DEFINE	+= -D__circle__ -DRASPPI=$(RASPPI) \
 	   -D__VCCOREVER__=0x04000000 -U__unix__ -U__linux__ #-DNDEBUG
 
 AFLAGS	+= $(ARCH) $(DEFINE) $(INCLUDE) $(OPTIMIZE)
